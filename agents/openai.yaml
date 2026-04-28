@@ -1,0 +1,4 @@
+interface:
+  display_name: "TradeLens Skill"
+  short_description: "Local markdown-first trading analysis skill"
+  default_prompt: "Use $tradelensskill to work on the local markdown-first TradeLensSkill repository."
