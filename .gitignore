@@ -1,9 +1,42 @@
-.DS_Store
+# local user data
+background.md
+assets.md
+trade.md
+market_data.md
+analysis_history/
+screenshots/
+exports/
+
+# secrets
+.env
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.*
+credentials.*
+token.*
+
+# broker / provider private files
+futu_account*
+moomoo_account*
+opend_session*
+broker_session*
+
+# Python
 __pycache__/
 *.py[cod]
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
 .pytest_cache/
+.coverage
 .mypy_cache/
 .ruff_cache/
-.coverage
 htmlcov/
-*.egg-info/
+
+# macOS
+.DS_Store

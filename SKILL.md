@@ -1,63 +1,74 @@
 ---
-name: tradelensskill
-description: "Use when Codex is asked to modify, review, debug, or plan work for TradeLensSkill: a local markdown-first trading analysis skill. This repository is not a native macOS app, has no SwiftUI UI, has no Xcode project, has no broker login, and must keep user trading data local in markdown files."
+name: trade-lens
+description: Local-first trade evaluation skill for AI agents. Use when the user wants to parse, evaluate, confirm, journal, or review proposed stock/options trades with term-aware trade quality, risk, scenario profile, missing-data disclosure, local markdown memory, and optional read-only market data providers. TradeLensSkill is not a trade coach and must not give broker execution advice.
 ---
 
 # TradeLensSkill
 
-## Overview
+TradeLensSkill is a local-first trade evaluation skill for AI agents.
 
-TradeLensSkill is a local markdown-first trading analysis skill. It helps an AI agent extract, confirm, analyze, and journal trading context using local files such as `background.md`, `assets.md`, `trade.md`, `market_data.md`, and `analysis_history/`.
+It remains a local markdown-first trading analysis skill: persistent user memory lives in local markdown files.
 
-This checkout is not a native macOS app. It has no SwiftUI UI, no Xcode project, no broker login, no trading execution, no server sync, and no requirement to send user trading data to any server.
+It answers: "How good is this trade for each time horizon?"
 
-## Active Product
+It does not answer: "What order should I place?"
 
-Treat `Trade Lens/` as the active skill bundle:
+TradeLensSkill is not a native macOS app. It has no broker execution, no broker login, no cloud sync, no database, no native app requirement, no SwiftUI UI, and no Xcode project.
 
-- `Trade Lens/SKILL.md`: skill trigger metadata and core workflow.
-- `Trade Lens/AGENTS.md`: authoritative operating rules for agent workflows.
-- `Trade Lens/background.md`: durable investor profile, constraints, preferences, and rules.
-- `Trade Lens/assets.md`: local account and position snapshots.
-- `Trade Lens/trade.md`: strategy-level trade journal.
-- `Trade Lens/market_data.md`: local market snapshots and provider settings.
-- `Trade Lens/analysis_rules.md`: analysis workflow and required report format.
-- `Trade Lens/analysis_history/`: saved local markdown analyses.
-- `Trade Lens/templates/`: markdown templates.
-- `Trade Lens/src/tradelens/`: Python helpers for parsing, calculations, scoring, storage, and report writing.
-- `Trade Lens/tests/`: unit tests for deterministic local behavior.
+## When To Use
 
-## Product Constraints
+- Evaluate a proposed stock, ETF, or options trade.
+- Compare intraday, short-term, medium-term, and long-term trade quality.
+- Parse trade/order text or screenshots.
+- Update confirmed `background.md`, `assets.md`, or `trade.md`.
+- Save and inspect `analysis_history/`.
+- Configure or test optional read-only data providers.
+- For asset checks, try configured read-only account/positions APIs first, save successful non-secret snapshots to `assets.md`, and use local `assets.md` only as fallback.
+- For every trade check/evaluation, load `assets.md`, relevant `trade.md` history, and `market_data.md` provider/snapshot context before judging the trade.
 
-Follow these rules unless the user explicitly changes the product direction:
+## Canonical Agent Workflows
 
-- Keep the product local-first and markdown-first.
-- Do not add SwiftUI files.
-- Do not add an Xcode project.
-- Do not add broker login, broker automation, or trading execution.
-- Do not add server sync, cloud storage, accounts, payments, or web backends.
-- Do not send user trading data to any server.
-- Store and read durable context through local markdown files.
-- Preserve prior markdown records; prefer append-only history.
-- Never invent market data, option-chain data, scenario probabilities, or profit/loss values.
-- Keep deterministic calculations in `Trade Lens/src/tradelens/`.
-- Keep analysis reports aligned with the evaluation-only template in `Trade Lens/AGENTS.md`, `Trade Lens/analysis_rules.md`, and `Trade Lens/templates/analysis.template.md`.
-- TradeLensSkill evaluates trade quality, risk, term fit, and scenario profile. It must not tell the user to buy, sell, roll, close, hold, wait, reduce, or hedge.
+These slash-style entries are agent workflows. They are not shell CLI commands unless `src/tradelens/cli.py` explicitly implements a helper.
 
-## Working Pattern
+- `/tradelens trade`
+- `/tradelens assets`
+- `/tradelens background`
+- `/tradelens history`
+- `/tradelens analysis ratio`
+- `/tradelens provider setup`
+- `/tradelens provider test`
 
-For skill changes:
+## Absolute Safety Rules
 
-1. Read `Trade Lens/AGENTS.md` and the relevant source or markdown file.
-2. Keep edits scoped to the local markdown skill.
-3. Separate visible facts, user claims, AI inferences, assumptions, missing data, and trade judgment in generated analysis.
-4. Add or update focused tests for changed deterministic behavior.
-5. Run the local unittest suite from the skill bundle when possible:
+- Never give action advice or broker execution advice.
+- Never tell the user to buy, sell, hold, roll, close, wait, reduce, or hedge.
+- Always use the allowed judgment labels from `docs/report_contract.md`.
+- Always include Term-Aware Trade Judgment near the top of analysis reports.
+- Never fake market data, account data, option data, news, volatility, sentiment, scenario probabilities, or profit/loss values.
+- Never ask for broker passwords, trading passwords, 2FA codes, SMS codes, recovery codes, or API secrets.
+- Never store secrets in markdown or `analysis_history/`.
+- Proposed trades may save an analysis record, but must not update `trade.md` unless the user confirms the trade is executed or planned to journal.
+- Asset checks must not default to saved local snapshots when configured read-only account/positions APIs are available.
+- Unsupported account/position capability stubs do not count as an API-first asset refresh; Futu/Moomoo OpenD should use read-only SDK account and position queries when available.
+- Asset checks must not mix source modes: if provider account/positions refresh fails or returns null, use only local `assets.md` and do not add realtime quote details.
+- Trade checks must use configured read-only providers for realtime/latest market data when available, save successful non-secret provider snapshots to `market_data.md`, and fall back to saved local market data only when realtime/latest data is unavailable.
 
-```bash
-python3 -m unittest discover -s tests
-```
+## Output Style
 
-## Future Wrapper Boundary
+- For normal successful provider/API lookups, show the requested data directly and briefly.
+- Do not repeat routine safety boilerplate in every successful provider response.
+- Mention provider safety only when it affects the current task, such as setup, install permission, blocked credentials, unsafe order/trading requests, remote-host risk, or permission failures.
 
-A native wrapper could be considered in the future, but it is not the current product in this repository. Current work must keep TradeLensSkill usable as a local markdown-based skill without any native app, server, broker login, or cloud dependency.
+## Command-Specific Docs
+
+Load only the docs needed for the command:
+
+- `/tradelens trade`: `docs/report_contract.md`, `docs/analysis_rules.md`, `docs/provider_rules.md`, `docs/safety_rules.md`
+- `/tradelens assets`: `docs/assets_rules.md`, `docs/safety_rules.md`
+- `/tradelens background`: `docs/background_rules.md`, `docs/safety_rules.md`
+- `/tradelens history`: `docs/history_rules.md`
+- `/tradelens analysis ratio`: `docs/history_rules.md`, `docs/stats_rules.md`
+- `/tradelens provider setup`: `docs/provider_rules.md`, `docs/safety_rules.md`
+- `/tradelens provider test`: `docs/provider_rules.md`, `docs/safety_rules.md`
+
+For small commands, do not load full analysis docs.
