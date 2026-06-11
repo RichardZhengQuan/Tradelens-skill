@@ -40,6 +40,9 @@ TradeLensSkill does not give action advice. It evaluates trade quality, risk, te
 - Saves local markdown analysis history.
 - Keeps durable local user context in markdown examples such as `background.md`, `assets.md`, `trade.md`, and `market_data.md`.
 - Supports optional read-only market data providers, while keeping manual and zero-config use available.
+- For asset checks, tries configured read-only account/position APIs first, saves successful non-secret snapshots to `assets.md`, and uses saved local assets only as fallback.
+- For every trade check, reads local assets and relevant trade history before judging position fit, exposure, and overlap.
+- Uses configured read-only providers for realtime/latest market data when available, saves successful non-secret provider snapshots to `market_data.md`, and falls back to saved local market data when realtime data is unavailable.
 
 ## What It Will Not Do
 
@@ -96,6 +99,14 @@ The repository includes `.example` and template files. Runtime user files are ig
 
 Providers are optional. TradeLensSkill works in zero-config/manual mode with pasted text, screenshots, local markdown, and user-confirmed values.
 
+Asset checks use configured read-only provider APIs first for account summary and positions. Saved `assets.md` snapshots are the fallback when provider refresh is unavailable, blocked, stale, incomplete, or explicitly bypassed.
+
+For Futu/Moomoo OpenD, account summary and positions use read-only SDK queries (`accinfo_query` and `position_list_query`) when the SDK is installed. TradeLensSkill does not call unlock or order APIs for asset checks.
+
+Asset checks do not mix source modes. If account/positions API refresh fails or returns null, the asset check uses only the saved local `assets.md` snapshot and does not combine it with refreshed quotes or option marks.
+
+Trade checks use Smart Fetch: configured read-only providers are tried for realtime/latest market data first. Successful provider snapshots are saved append-only in `market_data.md`; saved local snapshots are used as fallback only when realtime/latest provider data is unavailable, stale, blocked, or incomplete.
+
 Optional provider targets include:
 
 - Futu OpenD
@@ -108,7 +119,7 @@ Optional provider targets include:
 - OptionCharts public fallback
 - ManualProvider
 
-OpenD providers are read-only by default and must keep trading disabled. API providers read keys from environment variables only.
+OpenD providers are read-only by default and must keep trading disabled. Simple Futu/Moomoo quote checks use the direct local OpenD JSON socket path first, so `futu-api` / `moomoo-api` is optional for quotes and only used as fallback when installed. API providers read keys from environment variables only.
 
 ## Report Contract
 

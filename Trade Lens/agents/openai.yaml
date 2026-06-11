@@ -1,7 +1,0 @@
-interface:
-  display_name: "Trade Lens"
-  short_description: "Local markdown trading analysis from screenshots and text"
-  icon_small: "./assets/trade-lens-icon-small.png"
-  icon_large: "./assets/trade-lens-icon.png"
-  brand_color: "#F5B642"
-  default_prompt: "Use $trade-lens for local markdown trading analysis. Treat /background, /assets, /trade, /history, and /analysis ratio as agent workflows, not shell CLI commands."
